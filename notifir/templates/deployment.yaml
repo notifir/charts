@@ -91,7 +91,7 @@ spec:
       {{- if .Values.initConfig }}
         - name: init-config
           configMap:
-            name: {{ template "notifir.fullname" . }}-init
+            name: {{ template "notifir.fullname" . }}-initconfig
       {{- end }}
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | indent 6 }}

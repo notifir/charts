@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "notifir.fullname" . }}-init
+  name: {{ template "notifir.fullname" . }}-initconfig
   labels:
     app.kubernetes.io/name: {{ template "notifir.name" . }}
     helm.sh/chart: {{ include "notifir.chart" . }}
