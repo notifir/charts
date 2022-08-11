@@ -1,15 +1,10 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "notifir.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
 {{- $serviceName := include "notifir.fullname" . -}}
 {{- $servicePort := .Values.service.port | default "80" -}}
 {{- $pathType := .Values.ingress.pathType | default "Prefix" -}}
 {{- $paths := .Values.ingress.paths -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -22,7 +17,6 @@ metadata:
   {{- range $key, $value := .Values.ingress.labels }}
     {{ $key }}: {{ $value | quote }}
   {{- end }}
-  {{- with .Values.ingress.annotations }}
 {{- if .Values.ingress.annotations }}
   annotations:
     kubernetes.io/ingress.class: nginx
