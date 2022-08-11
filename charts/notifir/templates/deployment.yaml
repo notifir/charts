@@ -32,7 +32,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "notifir.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -42,6 +41,22 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+          - name: AUTH_TYPE
+            value: {{ .Values.auth.type | quote }}
+          {{- if .Values.postgresql.enabled }}
+          - name: CLIENT
+            value: pg
+          - name: DB_DATABASE
+            value: {{ .Values.postgresql.postgresqlDatabase | quote }}
+          - name: DB_HOST
+            value: {{ include "notifir.postgresql.fullname" . }}
+          - name: DB_PORT
+            value: {{ .Values.postgresql.service.port | quote }}
+          - name: DB_USER
+            value: {{ .Values.postgresql.postgresqlUsername | quote }}
+          - name: DB_PASSWORD
+            value: {{ .Values.postgresql.postgresqlPassword | quote }}
+          {{- end }}
           {{- if .Values.environment }}
           {{- range $key, $val := .Values.environment }}
           - name: {{ $key }}

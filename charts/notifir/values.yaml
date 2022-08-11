@@ -71,6 +71,24 @@ service:
   type: ClusterIP
   port: 80
 
+# Authentication type
+# https://notifir.github.io/docs/integration/authentication
+auth:
+  type: hmac
+
+postgresql:
+  # If `true`, the Postgresql dependency is enabled
+  enabled: true
+  # PostgreSQL User to create
+  postgresqlUsername: postgres
+  # PostgreSQL Password for the new user
+  postgresqlPassword: postgres
+  # PostgreSQL Database to create
+  postgresqlDatabase: postgres
+  # PostgreSQL network policy configuration
+  networkPolicy:
+    enabled: false
+
 ingress:
   enabled: false
   hosts:
