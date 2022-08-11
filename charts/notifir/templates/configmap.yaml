@@ -8,6 +8,7 @@ metadata:
     helm.sh/chart: {{ include "notifir.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "notifir.labels" . | nindent 4 }}
 data:
   init.json: |
     {{- with .Values.initConfig }}
