@@ -1,0 +1,16 @@
+{{- if .Values.initConfig -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "notifir.fullname" . }}-init
+  labels:
+    app.kubernetes.io/name: {{ template "notifir.name" . }}
+    helm.sh/chart: {{ include "notifir.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  init.json: |
+    {{- with .Values.initConfig }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+{{- end }}
