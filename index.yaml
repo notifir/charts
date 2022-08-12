@@ -2,6 +2,26 @@ apiVersion: v1
 entries:
   notifir:
   - apiVersion: v2
+    created: "2022-08-12T05:21:10.739015521Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.16.2
+    description: Chart for Notifir - open-source notification system
+    digest: f7b78fb61327f25627802d00a666889a2ecaf2c972513d8d0c311c3b8bd8ce39
+    home: https://github.com/notifir
+    keywords:
+    - notifir
+    - notifications
+    maintainers:
+    - email: pavel@titenkov.com
+      name: titenkov
+    name: notifir
+    urls:
+    - https://github.com/notifir/charts/releases/download/notifir-0.3.0/notifir-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
     created: "2022-08-11T11:57:51.021142162Z"
     description: Chart for notifir
     digest: d37215373e3da2f29ae83db1d3fe60fed7c284ce7e0f23a8dc92ec6f09da64fd
@@ -13,4 +33,4 @@ entries:
     urls:
     - https://github.com/notifir/charts/releases/download/notifir-0.2.0/notifir-0.2.0.tgz
     version: 0.2.0
-generated: "2022-08-11T11:57:51.021374575Z"
+generated: "2022-08-12T05:21:10.739032421Z"
