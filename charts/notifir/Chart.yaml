@@ -1,6 +1,7 @@
 apiVersion: v2
 name: notifir
-version: 0.3.0
+version: 1.0.0
+appVersion: 1.1.5
 description: Chart for Notifir - open-source notification system
 keywords:
   - notifir
@@ -10,7 +11,7 @@ maintainers:
   - name: titenkov
     email: pavel@titenkov.com
 dependencies:
-  - name: postgresql
-    version: 10.16.2
+  - condition: postgresql.enabled
+    name: postgresql
     repository: https://charts.bitnami.com/bitnami
-    condition: postgresql.enabled
+    version: 11.x.x

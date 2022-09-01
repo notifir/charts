@@ -7,7 +7,6 @@ metadata:
     helm.sh/chart: {{ include "notifir.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    {{- include "notifir.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -16,17 +15,18 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ include "notifir.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
-      {{- include "notifir.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- if .Values.initConfig }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.podAnnotations }}
+        {{ toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "notifir.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        {{- include "notifir.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -43,20 +43,39 @@ spec:
           env:
           - name: AUTH_TYPE
             value: {{ .Values.auth.type | quote }}
-          {{- if .Values.postgresql.enabled }}
           - name: CLIENT
             value: pg
+          {{- if .Values.postgresql.enabled }}
           - name: DB_DATABASE
-            value: {{ .Values.postgresql.postgresqlDatabase | quote }}
+            value: {{ .Values.postgresql.auth.database | quote }}
           - name: DB_HOST
             value: {{ include "notifir.postgresql.fullname" . }}
           - name: DB_PORT
-            value: {{ .Values.postgresql.service.port | quote }}
+            value: "5432"
           - name: DB_USER
-            value: {{ .Values.postgresql.postgresqlUsername | quote }}
-          - name: DB_PASSWORD
-            value: {{ .Values.postgresql.postgresqlPassword | quote }}
+            value: {{ .Values.postgresql.auth.username | quote }}
+          {{- else }}
+          - name: DB_DATABASE
+            value: {{ .Values.externalDatabase.database | quote }}
+          - name: DB_HOST
+            value: {{ .Values.externalDatabase.host | quote }}
+          - name: DB_PORT
+            value: {{ .Values.externalDatabase.port | quote }}
+          - name: DB_USER
+            value: {{ .Values.externalDatabase.user | quote }}
           {{- end }}
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "notifir.secret" . }}
+                key: {{ include "notifir.secretPasswordKey" . | quote }}
+          - name: DB_POSTGRES_USER
+            value: postgres
+          - name: DB_POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "notifir.secret" . }}
+                key: {{ include "notifir.secretPostgresPasswordKey" . | quote }}
           {{- if .Values.environment }}
           {{- range $key, $val := .Values.environment }}
           - name: {{ $key }}
@@ -70,8 +89,9 @@ spec:
           {{- end }}
           volumeMounts:
           {{- if .Values.initConfig }}
-          - mountPath: /deployments/config
+          - mountPath: /notifir/api/init.json
             name: init-config
+            subPath: init.json
           {{- end }}
           {{- if .Values.extraVolumeMounts }}
 {{ toYaml .Values.extraVolumeMounts | indent 10 }}
