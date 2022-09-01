@@ -8,7 +8,7 @@ image:
   repository: titenkov/notifir
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: latest
+  tag: 1.1.5
 
 imagePullSecrets: []
 nameOverride: ""
@@ -59,35 +59,81 @@ extraVolumes:
 #      name: my-configmap
 
 # The init config to bootstrap data on the application start
-# initConfig:
+
+# initConfig: |
+#   {
+#     "projects": [
+#       {
+#         "id": "default",
+#         "templates": [
+#           { "type": "entry-created", "locale": "en-GB", "content": "The entry {{ entry }} in {{ step }} was created in {{ folder }} by {{ user }}."},
+#           { "type": "entry-created", "locale": "nb-NO", "content": "Oppføringen {{ entry }} i {{ step }} ble opprettet i {{ folder }} av {{ user }}."},
+#           { "type": "entry-created", "locale": "sv-SE", "content": "Posten {{ entry }} i {{ step }} har skapats i {{ folder }} av {{ user }}."},
+#           { "type": "entry-moved", "locale": "en-GB", "content": "The entry {{ entry }} in {{ folder }} was moved from step {{ from_step }} to step {{ to_step }} by {{ user }}."},
+#           { "type": "entry-moved", "locale": "nb-NO", "content": "Oppføringen {{ entry }} i {{ folder }} ble flyttet fra steg {{ from_step }} til steg {{ to_step }} av {{ user }}."},
+#           { "type": "entry-moved", "locale": "sv-SE", "content": "Posten {{ entry }} i {{ folder }} har flyttats från steg {{ from_step }} till steg {{ to_step }} av {{ user }}."}
+#         ]
+#       }
+#     ]
+#   }
 
 # Environment variables
 # environment:
 #   MY_ENVIRONMENT_VARIABLE: example
 
-# existingExternalSecret: secret_store_name
-
 service:
   type: ClusterIP
   port: 80
 
-# Authentication type
+## @section Authentication
 # https://notifir.github.io/docs/integration/authentication
 auth:
   type: hmac
 
+## @section Database parameters
+
+## PostgreSQL chart configuration
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/values.yaml
+## @param postgresql.enabled Switch to enable or disable the PostgreSQL helm chart
+## @param postgresql.auth.username Name for a custom user to create
+## @param postgresql.auth.password Password for the custom user to create
+## @param postgresql.auth.database Name for a custom database to create
+## @param postgresql.auth.existingSecret Name of existing secret to use for PostgreSQL credentials
+## @param postgresql.architecture PostgreSQL architecture (`standalone` or `replication`)
+##
 postgresql:
-  # If `true`, the Postgresql dependency is enabled
   enabled: true
-  # PostgreSQL User to create
-  postgresqlUsername: postgres
-  # PostgreSQL Password for the new user
-  postgresqlPassword: postgres
-  # PostgreSQL Database to create
-  postgresqlDatabase: postgres
-  # PostgreSQL network policy configuration
-  networkPolicy:
-    enabled: false
+  auth:
+    enablePostgresUser: true
+    username: notifir
+    password: notifir
+    postgresPassword: postgres
+    database: notifir
+    existingSecret: ""
+  architecture: standalone
+
+## External PostgreSQL configuration
+## All of these values are only used when postgresql.enabled is set to false
+## @param externalDatabase.host Database host
+## @param externalDatabase.port Database port number
+## @param externalDatabase.user Non-root username for Postgresql
+## @param externalDatabase.password Password for the non-root username for Postgresql
+## @param externalDatabase.database Postgresql database name
+## @param externalDatabase.existingSecret Name of an existing secret resource containing the database credentials
+## @param externalDatabase.existingSecretPasswordKey Name of an existing secret password key
+## @param externalDatabase.existingSecretPostgresPasswordKey Name of an existing secret postgres password key
+externalDatabase:
+  host: ""
+  port: 5432
+  user: notifir
+  database: notifir
+  password: ""
+  postgresPassword: ""
+  existingSecret: ""
+  existingSecretPasswordKey: ""
+  existingSecretPostgresPasswordKey: ""
+
+## @section Ingress
 
 ingress:
   enabled: false
@@ -102,6 +148,8 @@ ingress:
       hosts:
         - notifir.example.com
 
+
+## @section Resources
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

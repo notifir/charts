@@ -11,6 +11,6 @@ metadata:
 data:
   init.json: |
     {{- with .Values.initConfig }}
-{{ toYaml . | indent 4 }}
+{{ . | indent 4 }}
     {{- end }}
 {{- end }}

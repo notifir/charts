@@ -79,5 +79,76 @@ Create a default fully qualified app name for the postgres requirement.
 */}}
 {{- define "notifir.postgresql.fullname" -}}
 {{- $postgresContext := dict "Values" .Values.postgresql "Release" .Release "Chart" (dict "Name" "postgresql") -}}
-{{ include "notifir.fullname" .}}-{{ include "postgresql.name" $postgresContext }}
-{{- end }}
+{{ include "postgresql.primary.fullname" $postgresContext }}
+{{- end -}}
+
+{{/*
+Create the name for the Notifir secret.
+*/}}
+{{- define "notifir.secret" -}}
+{{- if .Values.postgresql.enabled }}
+  {{- if .Values.postgresql.auth.existingSecret -}}
+    {{- tpl .Values.postgresql.auth.existingSecret $ -}}
+  {{- else -}}
+    {{- include "notifir.postgresql.fullname" . -}}
+  {{- end -}}
+{{- else -}}
+  {{- if .Values.externalDatabase.existingSecret -}}
+    {{- tpl .Values.externalDatabase.existingSecret $ -}}
+  {{- else -}}
+    {{- include "notifir.fullname" . -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name for the password secret key.
+*/}}
+{{- define "notifir.secretPasswordKey" -}}
+{{- if .Values.externalDatabase.existingSecret -}}
+  {{- .Values.externalDatabase.existingSecretPasswordKey -}}
+{{- else -}}
+  password
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name for the postgres password secret key.
+*/}}
+{{- define "notifir.secretPostgresPasswordKey" -}}
+{{- if .Values.externalDatabase.existingSecret -}}
+  {{- .Values.externalDatabase.existingSecretPostgresPasswordKey -}}
+{{- else -}}
+  postgres-password
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the database password.
+*/}}
+{{- define "notifir.password" -}}
+{{- if .Values.externalDatabase.password -}}
+  {{- .Values.externalDatabase.password | b64enc | quote -}}
+{{- else -}}
+  {{- if .Values.postgresql.auth.password -}}
+    {{- .Values.postgresql.auth.password | b64enc | quote -}}
+  {{- else -}}
+    {{- randAlphaNum 16 | b64enc | quote -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the database postgres password.
+*/}}
+{{- define "notifir.postgresPassword" -}}
+{{- if .Values.externalDatabase.postgresPassword -}}
+  {{- .Values.externalDatabase.postgresPassword | b64enc | quote -}}
+{{- else -}}
+  {{- if .Values.postgresql.auth.postgresPassword -}}
+    {{- .Values.postgresql.auth.postgresPassword | b64enc | quote -}}
+  {{- else -}}
+    {{- randAlphaNum 16 | b64enc | quote -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
